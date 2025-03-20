@@ -1,6 +1,7 @@
 ﻿using IKEA.BLL.Models.Departments;
 using IKEA.DAL.Models.Departments;
 using IKEA.DAL.presistance.Repository.Departments;
+using IKEA.DAL.presistance.UniteOfWork;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -12,11 +13,11 @@ namespace IKEA.BLL.Services
 {
     public class DepartmentServices : IDepartmentServices
     {
-        private readonly IDepartmentRepository _departmentRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public DepartmentServices(IDepartmentRepository departmentRepository)
+        public DepartmentServices(IUnitOfWork unitOfWork)
         {
-            _departmentRepository = departmentRepository;
+           _unitOfWork = unitOfWork;
         }
 
         int IDepartmentServices.CreatedDepartment(CreatedDepartmentDTO departmentDTO)
@@ -34,23 +35,24 @@ namespace IKEA.BLL.Services
 
             };
 
-            return _departmentRepository.Add(Createdepartment);
+           _unitOfWork.DepartmentRepository.Add(Createdepartment);
+            return _unitOfWork.Complete();
 
         }
 
         bool IDepartmentServices.DeleteDepartment(int id)
         {
-            var department=_departmentRepository.GetbyID(id);
+            var department= _unitOfWork.DepartmentRepository.GetbyID(id);
             if (department != null)
             {
-               return _departmentRepository.Delete(department) >0;
+                _unitOfWork.DepartmentRepository.Delete(department) ;
             }
-            return false;
+            return _unitOfWork.Complete()>0;
         }
 
         IEnumerable<DepartmentToReturnDTO> IDepartmentServices.GetALLDepartment()
         {
-           var Department=_departmentRepository.GetAllAsQueryable().Select(department=>new DepartmentToReturnDTO {
+           var Department= _unitOfWork.DepartmentRepository.GetAllAsQueryable().Select(department=>new DepartmentToReturnDTO {
                //Manual Mapping
                Id = department.Id,
                Name = department.Name,
@@ -67,7 +69,7 @@ namespace IKEA.BLL.Services
         DepartmentDetailsReturnDTO? IDepartmentServices.GetDepartmentbyId(int id)
         {
 
-            var department = _departmentRepository.GetbyID(id);
+            var department = _unitOfWork.DepartmentRepository.GetbyID(id);
             if (department is not null)
             {
                 return new DepartmentDetailsReturnDTO
@@ -104,7 +106,10 @@ namespace IKEA.BLL.Services
                 
             };
              
-            return _departmentRepository.Update(UpdateDepartment);
+             _unitOfWork.DepartmentRepository.Update(UpdateDepartment);
+
+            return _unitOfWork.Complete();
+
 
         }
     }

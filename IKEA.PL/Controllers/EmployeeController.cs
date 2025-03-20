@@ -1,4 +1,5 @@
-﻿using IKEA.BLL.Models.Employee;
+﻿using IKEA.BLL.Models.Departments;
+using IKEA.BLL.Models.Employee;
 using IKEA.BLL.Services;
 using IKEA.BLL.Services.Employees;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +26,9 @@ namespace IKEA.PL.Controllers
 
         #region Index
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(string search)
         {
-            var employees = _employeeService.GetAllEmployees();
+            var employees = _employeeService.GetAllEmployees(search);
             return View(employees);
         }
         #endregion
@@ -36,8 +37,13 @@ namespace IKEA.PL.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            ViewData["Department"]=_departmentServices.GetALLDepartment();
-            return View();
+            var departments = _departmentServices.GetALLDepartment()?.ToList() ?? new List<DepartmentToReturnDTO>();
+
+            Console.WriteLine($"Departments Count: {departments.Count}"); // Debugging
+
+            ViewData["Department"] = departments;
+
+            return View(new CreatedEmployeeDto());
         }
 
         [HttpPost]

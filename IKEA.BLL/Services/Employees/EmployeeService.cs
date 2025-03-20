@@ -2,6 +2,7 @@
 using IKEA.BLL.Models.Employee;
 using IKEA.DAL.Models.Employees;
 using IKEA.DAL.presistance.Repository.Employees;
+using IKEA.DAL.presistance.UniteOfWork;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -13,11 +14,12 @@ namespace IKEA.BLL.Services.Employees
 {
     public class EmployeeService : IEmployeeService
     {
-        private readonly IEmployeeRepository _employeeRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public EmployeeService(IEmployeeRepository employeeRepository)
+        public EmployeeService(IUnitOfWork unitOfWork)
         {
-           _employeeRepository = employeeRepository;
+            // Ask Clr For Creating Object From Class Implementing IUinteof work
+            _unitOfWork = unitOfWork;
         }
        
         
@@ -41,8 +43,9 @@ namespace IKEA.BLL.Services.Employees
                LastModificationOn= DateTime.UtcNow,
 
            };
-            return _employeeRepository.Add(Employee);
+             _unitOfWork.EmployeeRepository.Add(Employee);
 
+            return _unitOfWork.Complete();
            
         }
 
@@ -68,23 +71,28 @@ namespace IKEA.BLL.Services.Employees
                 LastModificationOn = DateTime.UtcNow,
                 
             };
-            return _employeeRepository.Update(employee);
+            _unitOfWork.EmployeeRepository.Update(employee);
+
+            return _unitOfWork.Complete();
+
         }
 
         public bool DeleteEmployee(int id)
         {
-            var employee=_employeeRepository.GetbyID(id);
+            var employee=_unitOfWork.EmployeeRepository.GetbyID(id);
             if (employee is { })
             {
-                return _employeeRepository.Delete(employee) > 0;  
+                 _unitOfWork.EmployeeRepository.Delete(employee) ;  
+
              }
-            return false;
+
+            return _unitOfWork.Complete()>0;
         }
 
-        public IEnumerable<EmployeeDto> GetAllEmployees()
+        public IEnumerable<EmployeeDto> GetAllEmployees(string search)
         {
-          return _employeeRepository.GetAllAsQueryable()
-                .Where(E=>!E.IsDeleted)
+            return _unitOfWork.EmployeeRepository.GetAllAsQueryable()
+                  .Where(E => !E.IsDeleted && (string.IsNullOrEmpty(search) || E.Name.ToLower().Contains(search.ToLower())))
                 .Include(E=>E.Department)
                 .Select(employee=> new EmployeeDto 
           {
@@ -103,7 +111,7 @@ namespace IKEA.BLL.Services.Employees
 
         public EmployeeDetailsDto? GetEmployeeById(int id)
         {
-            var employee=_employeeRepository.GetbyID(id);
+            var employee= _unitOfWork.EmployeeRepository.GetbyID(id);
             if (employee is { })
                 return new EmployeeDetailsDto()
                 {

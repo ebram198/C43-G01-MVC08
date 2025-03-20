@@ -5,6 +5,8 @@ using IKEA.BLL.Services.Employees;
 using IKEA.DAL.presistance.Data;
 using IKEA.DAL.presistance.Repository.Departments;
 using IKEA.DAL.presistance.Repository.Employees;
+using IKEA.DAL.presistance.UniteOfWork;
+using IKEA.PL.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -25,13 +27,12 @@ namespace IKEA.PL
                 OptionsBuilder.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             }));
 
-            builder.Services.AddScoped<IDepartmentRepository, DepartmentRepositry>();
+            // builder.Services.AddScoped<IDepartmentRepository, DepartmentRepositry>();
+            //builder.Services.AddScoped<IEmployeeRepository, EmployeeReposatory>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IDepartmentServices, DepartmentServices>();
-            //builder.Services.AddScoped<IEmployeeRepository, IEmployeeRepository>();
-            builder.Services.AddScoped<IEmployeeRepository, EmployeeReposatory>();
-
             builder.Services.AddScoped<IEmployeeService , EmployeeService>();
-
+            builder.Services.AddAutoMapper(m => m.AddProfile(new MappingProfile()));
             #endregion
 
 

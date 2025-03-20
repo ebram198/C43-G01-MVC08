@@ -10,7 +10,7 @@ namespace IKEA.BLL.Services.Employees
     public interface IEmployeeService
     {
 
-        IEnumerable<EmployeeDto> GetAllEmployees();
+        IEnumerable<EmployeeDto> GetAllEmployees(string search );
 
         EmployeeDetailsDto? GetEmployeeById(int id);
 
@@ -18,6 +18,8 @@ namespace IKEA.BLL.Services.Employees
         int updateEmployee(UpdatedEmployeeDto employeeDto02);
 
         bool DeleteEmployee(int id);
+
+
 
 
     }

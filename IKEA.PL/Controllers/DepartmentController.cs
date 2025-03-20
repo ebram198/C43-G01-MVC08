@@ -1,4 +1,5 @@
-﻿using IKEA.BLL.Models.Departments;
+﻿using AutoMapper;
+using IKEA.BLL.Models.Departments;
 using IKEA.BLL.Services;
 using IKEA.DAL.Models.Departments;
 using IKEA.PL.Models.Departmrnt;
@@ -11,12 +12,14 @@ namespace IKEA.PL.Controllers
         private readonly IDepartmentServices _departmentServices;
         private readonly ILogger<DepartmentController> _logger;
         private readonly IWebHostEnvironment _environment;
+        private readonly IMapper _mapper;
 
-        public DepartmentController(IDepartmentServices departmentServices, ILogger<DepartmentController> logger, IWebHostEnvironment environment)
+        public DepartmentController(IDepartmentServices departmentServices, ILogger<DepartmentController> logger, IWebHostEnvironment environment,IMapper mapper)
         {
             _departmentServices = departmentServices;
             _logger = logger;
             _environment = environment;
+         _mapper = mapper;
         }
 
         #region Index
@@ -122,15 +125,9 @@ namespace IKEA.PL.Controllers
             {
                 return NotFound();
             }
-
-            return View(new DepartmentEditViewModel() 
-            {
-                Code=department.code,
-                Name=department.Name,
-                CreationDate=department.CreationDate,
-
-            });
-
+            var departmentVm = _mapper.Map<DepartmentDetailsReturnDTO, DepartmentEditViewModel>(department);
+       
+            return View(departmentVm);
         }
         #endregion
         #region post
@@ -144,13 +141,16 @@ namespace IKEA.PL.Controllers
             var message=string.Empty;
             try
             {
-                var updateDepartment = new UpdateDepartmentDTO() 
-                {
-                    Id=id,
-                    code=DepartmentVM.Code,
-                    Name=DepartmentVM.Name,
-                    CreationDate=DepartmentVM.CreationDate,
-                };
+                //Manual Mapping
+                //var updateDepartment = new UpdateDepartmentDTO() 
+                //{
+                //    Id=id,
+                //    code=DepartmentVM.Code,
+                //    Name=DepartmentVM.Name,
+                //    CreationDate=DepartmentVM.CreationDate,
+                //};
+
+                var updateDepartment = _mapper.Map<UpdateDepartmentDTO>(DepartmentVM);
 
                 var updated=_departmentServices.UpdateDepartment(updateDepartment)>0;
                 if (updated)

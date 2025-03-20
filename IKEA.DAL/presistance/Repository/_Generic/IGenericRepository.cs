@@ -13,8 +13,8 @@ namespace IKEA.DAL.presistance.Repository._Generic
         IEnumerable<T> GetAll(bool withAsTracking = true);
         IQueryable<T> GetAllAsQueryable();//note
         T? GetbyID(int id);
-        int Add(T entity);
-        int Update(T entity);
-        int Delete(T entity);
+        void Add(T entity);
+        void Update(T entity);
+        void Delete(T entity);
     }
 }
